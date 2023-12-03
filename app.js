@@ -39,9 +39,9 @@ const socket = new Socket({
   await api.token();
 
   const url = new Server().CleanAddress(
-    `${process.env.ADDRESS}:${process.env.PORT_ADDRESS}`,
-    false,
-    false,
+      `${process.env.ADDRESS}:${process.env.PORT_ADDRESS}`,
+      false,
+      false,
   );
 
   const wsData = {
@@ -83,17 +83,17 @@ const socket = new Socket({
   });
 })();
 
-if (process.env.NODE_ENV.includes("production")) {
-  nodeCron.schedule(
+
+nodeCron.schedule(
     `*/${process.env.CHECK_INACTIVE_USERS_DURATION} * * * *`,
     () => {
       const db = new DBAdapter(DBType);
       db.deleteInactiveUsers();
     },
-  );
-  
-  if (process.env?.TARGET === "IP") {
-    nodeCron.schedule(
+);
+
+if (process.env?.TARGET === "IP") {
+  nodeCron.schedule(
       `*/${process.env.CHECK_IPS_FOR_UNBAN_USERS} * * * *`,
       () => {
 
@@ -111,11 +111,11 @@ if (process.env.NODE_ENV.includes("production")) {
           // console.log(`ipunban.sh stdout: ${stdout}`);
         });
       },
-    );
-  }
+  );
+}
 
-  if (process.env?.TARGET === "PROXY") {
-    nodeCron.schedule(
+if (process.env?.TARGET === "PROXY") {
+  nodeCron.schedule(
       `*/${process.env.CHECK_IPS_FOR_UNBAN_USERS} * * * *`,
       () => {
         // console.log("Check for unban users");
@@ -124,26 +124,26 @@ if (process.env.NODE_ENV.includes("production")) {
           db: DBType,
         }).activeUsersProxy();
       },
-    );
-  }
+  );
 }
+
 
 // Api server
 if (process.env?.API_ENABLE === "true") {
   const PORT = process.env?.API_PORT || 3000;
 
   let address = new Server().CleanAddress(
-    `${process.env.ADDRESS}:${PORT}`,
-    false,
-    true,
+      `${process.env.ADDRESS}:${PORT}`,
+      false,
+      true,
   );
 
   address = `${address}${process.env.API_PATH}`;
 
   app.use(
-    bodyParser.urlencoded({
-      extended: true,
-    }),
+      bodyParser.urlencoded({
+        extended: true,
+      }),
   );
   app.use(bodyParser.json());
 

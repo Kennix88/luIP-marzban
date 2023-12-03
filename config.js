@@ -20,9 +20,9 @@ class Ws {
     this.params = params;
 
     const url = `${process.env.SSL === "true" ? "wss" : "ws"}://${
-      params.url
+        params.url
     }/api/${patch}/logs?interval=${process.env.FETCH_INTERVAL_LOGS_WS}&token=${
-      this.access_token
+        this.access_token
     }`;
 
     const db = new DBAdapter(params.DB);
@@ -91,16 +91,17 @@ class Ws {
         if (item.email.toLowerCase() === "api]") {
           console.log(`Notification: Received data for "api]" email. SKIP`);
         } else {
+          console.log(`Пользователь: ${item.email} | IP: ${item.ip} | Порт: ${item.port}`)
           await this.ipGuard.use(
-            item.ip,
-            () => this.db.read(item.email),
-            () =>
-              this.db.addIp(item.email, {
-                ip: item.ip,
-                port: item.port,
-                date: new Date().toISOString().toString(),
-              }),
-            () => this.db.deleteLastIp(item.email),
+              item.ip,
+              () => this.db.read(item.email),
+              () =>
+                  this.db.addIp(item.email, {
+                    ip: item.ip,
+                    port: item.port,
+                    date: new Date().toISOString().toString(),
+                  }),
+              () => this.db.deleteLastIp(item.email),
           );
         }
       }
@@ -128,7 +129,7 @@ class Api {
    */
   create() {
     const url = new Server().CleanAddress(
-      `${process.env.ADDRESS}:${process.env.PORT_ADDRESS}`,
+        `${process.env.ADDRESS}:${process.env.PORT_ADDRESS}`,
     );
 
     this.axios = axios.create({
@@ -140,17 +141,17 @@ class Api {
     });
 
     this.axios.interceptors.response.use(
-      (value) => value,
-      async (error) => {
-        if (
-          error?.response?.data?.detail === "Could not validate credentials"
-        ) {
-          await this.token();
-          console.log("New Token:", this.accessToken);
-        }
+        (value) => value,
+        async (error) => {
+          if (
+              error?.response?.data?.detail === "Could not validate credentials"
+          ) {
+            await this.token();
+            console.log("New Token:", this.accessToken);
+          }
 
-        return error;
-      },
+          return error;
+        },
     );
   }
 
@@ -188,8 +189,8 @@ class Api {
       if (!data) return nodes;
 
       nodes = data
-        .filter((item) => item.status === "connected")
-        .map((item) => item.id);
+          .filter((item) => item.status === "connected")
+          .map((item) => item.id);
     } catch (e) {
       console.error(e);
     }
@@ -206,16 +207,16 @@ class Api {
       const { data } = await this.axios.get(`/user/${email}`);
 
       const res = await this.axios.put(
-        `/user/${email}`,
-        {
-          ...data,
-          status,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+          `/user/${email}`,
+          {
+            ...data,
+            status,
           },
-        },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
       );
     } catch (e) {
       console.error(e);
@@ -262,29 +263,29 @@ class Socket {
     //   },
     //   retries: 60,
     // });
-  
+
     // console.log("this.socket:", this.socket);
-  
+
     // if (!(this.socket instanceof socket.Server)) {
     //   console.error("this.socket is not an instance of socket.Server");
     //   return;
     // }
-  
+
     // const nsp = this.socket.of(process.env?.LISTEN_PATH);
-  
+
     // nsp.use(this.Auth).on("connection", (socket) => {
     //   this.connected = socket.connected;
     //   args.callback(socket);
     // });
 
     this.socket
-      .of(process.env?.LISTEN_PATH)
-      .use(this.Auth)
-      .on("connection", (socket) => {
-        this.connected = socket.connected;
+        .of(process.env?.LISTEN_PATH)
+        .use(this.Auth)
+        .on("connection", (socket) => {
+          this.connected = socket.connected;
 
-        args.callback(socket);
-      });
+          args.callback(socket);
+        });
   }
 
   Auth(socket, next) {
@@ -294,38 +295,38 @@ class Socket {
     const apiKey = socket.handshake.headers.api_key;
 
     if (!apiKey) {
-        console.error('API Key is empty or undefined');
-        return next(new Error('Authentication error'));
+      console.error('API Key is empty or undefined');
+      return next(new Error('Authentication error'));
     }
 
     let decryptedKey;
     try {
-        decryptedKey = crypto.AES.decrypt(
-            apiKey,
-            process.env.API_SECRET,
-        ).toString(crypto.enc.Utf8);
+      decryptedKey = crypto.AES.decrypt(
+          apiKey,
+          process.env.API_SECRET,
+      ).toString(crypto.enc.Utf8);
     } catch (error) {
-        console.error('Error during decryption:', error);
-        return next(new Error('Authentication error'));
+      console.error('Error during decryption:', error);
+      return next(new Error('Authentication error'));
     }
 
     console.log('Decrypted Key:', decryptedKey);
 
     if (!decryptedKey) {
-        console.error('Decrypted Key is empty or undefined');
-        return next(new Error('Authentication error'));
+      console.error('Decrypted Key is empty or undefined');
+      return next(new Error('Authentication error'));
     }
 
     try {
-        const parseKey = JSON.parse(decryptedKey);
+      const parseKey = JSON.parse(decryptedKey);
 
-        if (Date.now() > +parseKey.expireAt)
-            return next(new Error('Authentication error'));
-
-        next();
-    } catch (error) {
-        console.error('Error parsing JSON:', error);
+      if (Date.now() > +parseKey.expireAt)
         return next(new Error('Authentication error'));
+
+      next();
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+      return next(new Error('Authentication error'));
     }
   }
 
@@ -409,39 +410,27 @@ class IPGuard {
     const indexOfIp = data.ips.findIndex((item) => item.ip === `${ip}`);
 
     const users = new File().GetJsonFile(
-      join(__dirname, "users.json"),
-      JSON.stringify([]),
+        join(__dirname, "users.json"),
+        JSON.stringify([])
     );
-    let usersCsv = new File()
-      .GetCsvFile(join(__dirname, "users.csv"))
-      .toString();
 
-    if (usersCsv.trim()) {
-      usersCsv = usersCsv.split("\r\n").map((item) => item.split(","));
+    let user = null;
+
+    const userIndex = users.findIndex((item) => item[0] === data.email);
+
+    if (userIndex !== -1) {
+      user = users[userIndex];
     }
 
-    if (usersCsv && usersCsv.some((item) => item[0] === data.email) === false)
-      usersCsv = null;
-
-    let userCsv = null;
-    if (usersCsv.trim())
-      userCsv = usersCsv.filter((item) => item[0] === data.email)[0] || null;
-
-    const user = users.filter((item) => item[0] === data.email)[0] || null;
-
-    const maxAllowConnection = userCsv
-      ? +userCsv[1]
-      : user
-      ? +user[1]
-      : +process.env.MAX_ALLOW_USERS;
+    const maxAllowConnection = user ? +user[1] : +process.env.MAX_ALLOW_USERS;
 
     const limited = data.ips.length > maxAllowConnection;
-    
+
     if (indexOfIp !== -1 && limited) {
       return callback[2]();
     }
 
-    console.log(`Num IP: ${data.ips.length} | Max: ${maxAllowConnection} | IP: ${ip} | USER: ${data.email}`);
+    console.log(`Пользователь: ${data.email} | IP: ${ip} | Подключено IP: ${data.ips.length} | Максимум IP: ${maxAllowConnection} `);
 
     if (data.ips.length >= maxAllowConnection && indexOfIp === -1) {
       if (process.env?.TARGET === "PROXY") {
@@ -451,8 +440,8 @@ class IPGuard {
       }
 
       let file = new File()
-        .GetCsvFile(join(__dirname, "blocked_ips.csv"))
-        .toString();
+          .GetCsvFile(join(__dirname, "blocked_ips.csv"))
+          .toString();
 
       file = file.split("\r\n").map((item) => item.split(","));
 
@@ -464,6 +453,14 @@ class IPGuard {
       });
 
       this.ban({ ip, email: data.email });
+
+      if (process.env.TG_ENABLE === "true")
+        globalThis.bot.api.sendMessage(
+            process.env.TG_ADMIN,
+            "Пользователь <code>" + data.email + "</code>: IP <code>" + ip + "</code> заблокирован.\nВремя: " + process.env.BAN_TIME + " минут(ы)\n\nМаксимум устройств: " + maxAllowConnection +"\nПодключено: "+ data.ips.length +"",
+            { parse_mode: "HTML" }
+        );
+
 
       return;
     }
@@ -495,7 +492,7 @@ class IPGuard {
     console.log("successfully disabled");
 
     const fewMinutesLater = new Date(
-      Date.now() + 1000 * 60 * process.env?.BAN_TIME,
+        Date.now() + 1000 * 60 * process.env?.BAN_TIME,
     ).toISOString();
 
     deactives.push({
@@ -511,8 +508,8 @@ class IPGuard {
 
     if (process.env.TG_ENABLE === "true")
       globalThis.bot.api.sendMessage(
-        process.env.TG_ADMIN,
-        `${email} disabled successfully.
+          process.env.TG_ADMIN,
+          `${email} disabled successfully.
 Duration: ${process.env.BAN_TIME} minutes
       `,
       );
@@ -544,17 +541,17 @@ Duration: ${process.env.BAN_TIME} minutes
     const _shouldActive = shouldActive.map((item) => item.email);
 
     const replaceData = deactives.filter(
-      (item) => !_shouldActive.includes(item.email),
+        (item) => !_shouldActive.includes(item.email),
     );
 
     fs.writeFileSync(path, JSON.stringify(replaceData));
 
     if (process.env.TG_ENABLE === "true")
       globalThis.bot.api.sendMessage(
-        process.env.TG_ADMIN,
-        `${shouldActive
-          .map((item) => item.email)
-          .join(", ")} actived successfully.
+          process.env.TG_ADMIN,
+          `${shouldActive
+              .map((item) => item.email)
+              .join(", ")} actived successfully.
       `,
       );
   }
@@ -569,7 +566,7 @@ class BanDBConfig {
 
     this.db.serialize(() => {
       const sql =
-        "CREATE TABLE IF NOT EXISTS banned (ip TEXT, cid TEXT, date TEXT)";
+          "CREATE TABLE IF NOT EXISTS banned (ip TEXT, cid TEXT, date TEXT)";
 
       this.db.run(sql);
     });
@@ -587,12 +584,12 @@ class BanDBConfig {
         if (!row) {
           const sql = "INSERT INTO banned (ip, cid, date) VALUES (?, ?, ?) ";
           this.db.run(
-            sql,
-            [{ ...params, date: new Date().toLocaleString("en-US") }],
-            (err) => {
-              if (err) throw new Error(err);
-              console.log("Ip banned:", cid);
-            },
+              sql,
+              [{ ...params, date: new Date().toLocaleString("en-US") }],
+              (err) => {
+                if (err) throw new Error(err);
+                console.log("Ip banned:", cid);
+              },
           );
         }
 

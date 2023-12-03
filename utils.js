@@ -18,8 +18,8 @@ function banIP(ip, email) {
     if (code === 0) {
       if (process.env.TG_ENABLE === "true")
         globalThis.bot.api.sendMessage(
-          process.env.TG_ADMIN,
-          `${email}: IP ${ip} banned successfully.
+            process.env.TG_ADMIN,
+            `${email}: IP ${ip} banned successfully.
 Duration: ${process.env.BAN_TIME} minutes
           `,
         );
@@ -38,9 +38,9 @@ class User {
    */
   GetNewUserIP = async (data) => {
     let lines = data
-      .split(/\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}/g)
-      .map((item) => item.trim())
-      .filter((item) => item);
+        .split(/\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}/g)
+        .map((item) => item.trim())
+        .filter((item) => item);
 
     lines = lines.filter((item) => item.includes("accepted"));
 
@@ -75,9 +75,21 @@ class User {
 
       if (Object.keys(res).length === 0) continue;
 
+      //console.log(`Line: ${item}`)
+
+      //const email = item.split(" ").slice(-1)[0].replace(/\d\./g, "").substring(item.indexOf('.') + 1);
+      //const email = item.split(" ").slice(-1)[0].replace(/\d\./g, "").substring(item.indexOf('.') + 2);
+      //const emailMatch = item.match(/\S+\.([^.]+)/);
+      //const email = emailMatch ? emailMatch[1] : "";
+      const emailMatch = item.match(/email: (\S+)/);
+      const email = emailMatch ? emailMatch[1] : "";
+      const cleanedEmail = email.replace(/^\d+\./, "");
+
+      //console.log(`Email: ${cleanedEmail}`)
+
       newLines.push({
         ...res,
-        email: item.split(" ").slice(-1)[0].replace(/\d\./g, ""),
+        email: cleanedEmail,
       });
     }
 
@@ -139,9 +151,9 @@ class User {
     const chunks = data.split(" ");
 
     const ends =
-      chunks.includes("connection") &&
-      chunks.includes("ends") &&
-      chunks.includes("websocket:");
+        chunks.includes("connection") &&
+        chunks.includes("ends") &&
+        chunks.includes("websocket:");
 
     if (!ends) return 0;
 
